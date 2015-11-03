@@ -64,9 +64,7 @@ func (self *TrafficStats)statHandler(hi HostInfo) {
 				if recv >0 {
 					fmt.Printf("%5d recv %5d Bytes %.2fM/s\n", count, recv,float64(recv>>17)/float64(hi.intervalTime))
 				}
-				// if send>0 || recv>0 {
-				// 	fmt.Printf("%5d  %9d %6")
-				// }
+				
 				if hi.expireTime>0 && count>=hi.expireTime {
 					fmt.Printf("%s end test \n", hi.hostName)
 					return 
