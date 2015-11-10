@@ -8,11 +8,13 @@ import (
 type IperfUdpClient struct {
 	srvIp       string
 	srvPort     int 
+	host        string
 	conn *net.UDPConn
 }
 
 func NewIperfUdpClient(srvAddress string, srvPortNum int) (client *IperfUdpClient, err error){
-	udpAddr, err := net.ResolveUDPAddr("udp4", srvAddress + ":" + strconv.Itoa(srvPortNum))
+	host := srvAddress + ":" + strconv.Itoa(srvPortNum) 
+	udpAddr, err := net.ResolveUDPAddr("udp4", host)
 	HandleError(err, 0, "NewIperfUdpClient ResolveUDPAddr")
 
 	udpConn, err := net.DialUDP("udp4", nil, udpAddr)
@@ -21,6 +23,7 @@ func NewIperfUdpClient(srvAddress string, srvPortNum int) (client *IperfUdpClien
 	client = &IperfUdpClient{
 		srvIp   : srvAddress,
 		srvPort : srvPortNum,
+		host    : srvAddress+":send",
 		conn    : udpConn,
 	}
 	return
@@ -32,8 +35,35 @@ func (client *IperfUdpClient )Write(buff []byte)(n int, err error) {
 }
 
 func (client *IperfUdpClient)Run() {
+	
+	if stats.hostChan != nil {
+			hi := HostInfo{
+			hostName  : client.host,
+			intervalTime : 3,
+			expireTime : 36000,
+			
+		}
+		stats.hostChan <-hi
+	}
+
 	for {
-		client.conn.Write([]byte("testtesttesttesttesttesttesttest"))
+
+		content := "testtesttesttesttesttesttesttest"
+		length := len(content)
+
+		client.conn.Write([]byte(content))
+
+		
+
+		if stats.updateChan != nil {
+			u := UpdateTraffic{
+				hostName : client.host,
+				SendBytes : uint64(length),
+				RecvBytes : 0,
+			}
+			stats.updateChan <-u
+		}
+
 	}
 }
 

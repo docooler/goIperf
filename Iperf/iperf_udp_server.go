@@ -23,7 +23,7 @@ func NewIperfUdpServer(ipAddr string, portNum int) (server *IperfUdpServer, err 
     
     udpListener, err := net.ListenUDP("udp4", udpAddr)
     HandleError(err, 0, "NewIperfUdpServer udpListener")
-    log.Printf("listen on %s:%d\n", ipAddr, portNum)
+    log.Printf("listen on UDP %s:%d\n", ipAddr, portNum)
 
     server = &IperfUdpServer{
     	ip   : ipAddr,

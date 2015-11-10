@@ -63,7 +63,7 @@ func (self * HostMap)AddTrafficStat(host string, intervalBytesSend, intervalByte
 		stat.IntervalBytesSend     += intervalBytesSend
 		stat.TotalBytesSend        += intervalBytesSend
 	}else {
-		fmt.Printf("%s not in stat map please add it at first", host)
+		fmt.Printf("%s not in stat map please add it at first\n", host)
 	}
 }
 
@@ -78,7 +78,7 @@ func (self *HostMap)GetTrafficStat(host string)(sendBytes, recvBytes uint64){
     	stat.IntervalBytesReceived = 0
     	stat.IntervalBytesSend = 0
     } else {
-    	fmt.Printf("%s not in stat map please add it at first", host)
+    	fmt.Printf("%s not in stat map please add it at first\n", host)
     }
     return 
 }
