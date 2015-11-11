@@ -15,7 +15,7 @@ type IperfTcpClient struct {
 	Model    int
 }
 
-func NewIperfTcpClient(ipAddress string ,portNum int, model int )(client *IperfTcpClient, err error) {
+func NewIperfTcpClient(ipAddress string ,portNum int, model int , serial int)(client *IperfTcpClient, err error) {
 	host := ipAddress + ":" + strconv.Itoa(portNum)
 	conn, err := net.Dial("tcp", host)
 	HandleError(err, 1, "NewIperfTcpClient connect server failed")
@@ -23,7 +23,7 @@ func NewIperfTcpClient(ipAddress string ,portNum int, model int )(client *IperfT
 	client = &IperfTcpClient{
 		ip : ipAddress,
 		port : portNum,
-		host : host,
+		host : host + strconv.Itoa(serial),
 		conn : conn,
 		Model: model,
 	}

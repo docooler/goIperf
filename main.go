@@ -119,19 +119,19 @@ func test_tcp(){
 
 	go start_tcp_server(srvAddress, srvPort)
 
-	start_tcp_client(srvAddress, srvPort, Iperf.DOWNLOAD)
+	start_tcp_client(srvAddress, srvPort, Iperf.DOWNLOAD, 0)
 }
 
 func start_mutil_tcp_client(threadNum int, ipAddress string, port int, model int) {
 	for i := 0; i < threadNum; i++ {
 		wg.Add(1)
-		go start_tcp_client(ipAddress, port, model)
+		go start_tcp_client(ipAddress, port, model, i)
 	}
 	wg.Wait()
 }
 
-func start_tcp_client(ipAddress string, port int, model int) {
-	tcpClient, _ := Iperf.NewIperfTcpClient(ipAddress, port, model)
+func start_tcp_client(ipAddress string, port int, model int, serials int ) {
+	tcpClient, _ := Iperf.NewIperfTcpClient(ipAddress, port, model, serials)
 	defer tcpClient.Close()
 	defer wg.Add(-1)
 	tcpClient.Run()
