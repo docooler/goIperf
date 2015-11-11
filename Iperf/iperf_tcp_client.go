@@ -3,6 +3,7 @@ package Iperf
 import (
 		"net"
 		"strconv"
+		"log"
 		)
 
 type IperfTcpClient struct {
@@ -53,12 +54,22 @@ func (this *IperfTcpClient)loopSend() {
 
 func (this *IperfTcpClient)loopRecv() {
 	dataBuf := make([]byte, 1024)
+	errCouont := 0
 	for  {
 		n, err := this.conn.Read(dataBuf)
 		if err != nil {
-			HandleError(err, 0, "loopRecv ReadFromTCP")
-			continue
+			errCouont += 1
+			
+            if errCouont > 5 {
+            	HandleError(err, 0, "loopRecv ReadFromTCP")
+            	log.Println("exit")
+            	return
+            }
+		} else {
+			errCouont = 0
 		}
+
+		// log.Println("recv ok")
 		
 		this.anlyzeMessage(dataBuf, int64(n))
 	}

@@ -47,6 +47,12 @@ func (self *TrafficStats)StatsLoop() {
 		select {
 		case h := <-self.hostChan:
 			log.Println("add a host")
+			//send data to same host only need only statistics
+			if self.hostmap.IsExist(h.hostName) {
+				log.Println("we don't create other servers")
+				return
+			}
+			log.Println("create one servers")
 			self.hostmap.AddStatistics(h.hostName, h.intervalTime, h.expireTime)
 			go self.statHandler(h)
 		case u := <-self.updateChan:

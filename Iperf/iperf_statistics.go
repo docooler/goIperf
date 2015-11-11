@@ -28,6 +28,16 @@ func NewHostMap() (hm *HostMap){
 	}
 	return
 }
+
+func (self *HostMap)IsExist(host string) bool {
+	self.lock.Lock()
+	defer self.lock.Unlock()
+
+	if _,ok := self.hostmap[host]; ok {
+		return true
+	}
+	return false
+}
 func (self *HostMap)AddStatistics(host string, interval,expire int) {
 	self.lock.Lock()
 	defer self.lock.Unlock()

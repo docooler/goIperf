@@ -5,6 +5,7 @@ import (
 		// "fmt"
 		"goIperf/Iperf"
 		"flag"
+		"sync"
 		)
 
 
@@ -17,7 +18,11 @@ var (
 	bind       = flag.String("B", "", "bind to <host>, an interface or multicast address")
 	download   = flag.String("mode", "download", "upload package to server or download package from server only for client")
 	stats      = flag.String("stats", "", "stats webUI server 127.0.0.1:8090")
+	pthreadNum = flag.Int("P", 1, " number of parallel client threads to run" )
 )
+
+
+var wg sync.WaitGroup
 
 func main() {
 	flag.Parse()
@@ -42,7 +47,8 @@ func main() {
 	
 	if *udpMode {
 		if *hostAddress != "" {
-			start_upd_client(*hostAddress, portNum)
+			start_mutil_udp_client(*pthreadNum, *hostAddress, portNum)
+			
 		}else{
 
 			if *serverMode == false {
@@ -61,7 +67,7 @@ func main() {
 			case "upload":
 				mode = Iperf.UPLOAD
 			}
-			start_tcp_client(*hostAddress, portNum, mode)
+			start_mutil_tcp_client(*pthreadNum, *hostAddress, portNum, mode)
 		} else{
 			if *serverMode == false {
 				flag.Usage()
@@ -88,13 +94,21 @@ func test_udp(){
 func start_upd_client(ipAddress string, port int) {
 	udpClient,_ := Iperf.NewIperfUdpClient(ipAddress, port)
 	defer udpClient.Close()
-
+    defer wg.Add(-1)
 	udpClient.Run()
 }
 
+func start_mutil_udp_client(threadNum int, ipAddress string, port int) {
+	for i := 0; i < threadNum; i++ {
+		wg.Add(1)
+		start_upd_client(ipAddress,port)
+	}
+	wg.Wait()
+}
 func start_upd_server(ipAddress string, port int){
 	udpSrv, _ := Iperf.NewIperfUdpServer(ipAddress, port)
 	defer udpSrv.Close()
+	defer wg.Add(-1)
 
 	udpSrv.Run()
 }
@@ -108,9 +122,18 @@ func test_tcp(){
 	start_tcp_client(srvAddress, srvPort, Iperf.DOWNLOAD)
 }
 
+func start_mutil_tcp_client(threadNum int, ipAddress string, port int, model int) {
+	for i := 0; i < threadNum; i++ {
+		wg.Add(1)
+		go start_tcp_client(ipAddress, port, model)
+	}
+	wg.Wait()
+}
+
 func start_tcp_client(ipAddress string, port int, model int) {
 	tcpClient, _ := Iperf.NewIperfTcpClient(ipAddress, port, model)
 	defer tcpClient.Close()
+	defer wg.Add(-1)
 	tcpClient.Run()
 }
 

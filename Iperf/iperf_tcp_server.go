@@ -42,17 +42,15 @@ func (this *IperfTcpServer)Run() {
 			continue
 		}
 
-		this.conn = conn
-		break
+		go this.HandlerMessage(conn)
+		
 	}
-	this.HandlerMessage()
-
 }
 
-func (this *IperfTcpServer)HandlerMessage() {
+func (this *IperfTcpServer)HandlerMessage(conn *net.TCPConn) {
 	data := make([]byte, 1024)
 	for {
-		 n, err := this.conn.Read(data)
+		 n, err := conn.Read(data)
 		 HandleError(err, 0, "HandlerMessage ReadFromTCP")
          if n > 0 {
          	this.anlyzeMessage(data, n)
@@ -61,24 +59,37 @@ func (this *IperfTcpServer)HandlerMessage() {
          switch this.Model {
          	case DOWNLOAD:
          		//SEND DATA
-         		this.loopSend()
+         		this.loopSend(conn)
          	case UPLOAD:
          		//RECV DATA
-         		this.loopRecv()
+         		this.loopRecv(conn)
          }
 	}
 }
 
-func (this * IperfTcpServer)loopSend(){
+func (this * IperfTcpServer)loopSend(conn *net.TCPConn){
+	defer conn.Close()
 	sendData := "send Data Test Server to Client DUMMY DUMMY"
-	dataLen  := len(sendData)
+	
+	errCount := 0
 	for {
-		this.conn.Write([]byte(sendData))
-		this.anlyzeMessage([]byte(sendData), dataLen)
+		n, err := conn.Write([]byte(sendData))
+		if err != nil {
+			errCount += 1
+			if errCount > 5 {
+				HandleError(err, 0 , "loopSend error 5 times")
+				break 
+			}
+		} else {
+			errCount = 0
+		}
+		// log.Println("send ok")
+		this.anlyzeMessage([]byte(sendData), n)
 	}
 }
 
-func (this *IperfTcpServer)loopRecv() {
+func (this *IperfTcpServer)loopRecv(conn *net.TCPConn) {
+	defer conn.Close()
 	dataBuf := make([]byte, 1024)
 	for  {
 		n, err := this.conn.Read(dataBuf)
