@@ -50,7 +50,7 @@ func (self *TrafficStats)StatsLoop() {
 			//send data to same host only need only statistics
 			if self.hostmap.IsExist(h.hostName) {
 				log.Println("we don't create other servers")
-				return
+				continue
 			}
 			log.Println("create one servers")
 			self.hostmap.AddStatistics(h.hostName, h.intervalTime, h.expireTime)

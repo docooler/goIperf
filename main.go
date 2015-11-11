@@ -19,6 +19,7 @@ var (
 	download   = flag.String("mode", "download", "upload package to server or download package from server only for client")
 	stats      = flag.String("stats", "", "stats webUI server 127.0.0.1:8090")
 	pthreadNum = flag.Int("P", 1, " number of parallel client threads to run" )
+	mergeOut   = flag.Bool("m", false, "merge mutil client output")
 )
 
 
@@ -123,9 +124,13 @@ func test_tcp(){
 }
 
 func start_mutil_tcp_client(threadNum int, ipAddress string, port int, model int) {
+	clientSerails := 0 
 	for i := 0; i < threadNum; i++ {
 		wg.Add(1)
-		go start_tcp_client(ipAddress, port, model, i)
+		if *mergeOut == false {
+			clientSerails += 1
+		}
+		go start_tcp_client(ipAddress, port, model, clientSerails)
 	}
 	wg.Wait()
 }
